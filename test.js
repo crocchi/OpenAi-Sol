@@ -1,8 +1,8 @@
 const OpenAI = require('openai');
 
-const apiKey = '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';
-const organizationId = 'org-iF2FACP7DQSeJrGPjA3SCGzd';
-const assistantId = 'asst_E7Jc6QF4BDw7pLPIC9AajTqR';
+const apiKey = 
+const organizationId = 
+const assistantId = 
 
 //let myAssistant=[];
 let thread;
