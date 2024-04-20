@@ -1,16 +1,46 @@
+require('dotenv').config()
 const OpenAI = require('openai');
+const { TwitterApi } = require('twitter-api-v2');
+const CronJob = require("cron").CronJob;
 
-const apiKey = 
-const organizationId = 
-const assistantId = 
+
+//    TWITTER CLIENT
+//
+const client = new TwitterApi({
+    appKey: process.env.API_KEY_TWITTER,
+    appSecret: process.env.API_KEY_SECRET,
+    accessToken: process.env.ACCESS_TOKEN,
+    accessSecret: process.env.ACCESS_TOKEN_SECRET
+});
+const bearer = new TwitterApi(process.env.BEARER_TOKEN);
+const twitterClient = client.readWrite;
+const twitterBearer = bearer.readOnly;
+//
+//    END TWITTER CLIENT
+
+
+//     EXPRESS - FUTURE UPDATE
+//
+const express = require('express')
+const app = express()
+const port = process.env.PORT || 4000;
+//
+//
 
 //let myAssistant=[];
 let thread;
 let message;
-let contentMsg="what is btc?";
+let contentMsg="what is sol?, max 50 word";
 let answer;
 
-const openai = new OpenAI({ organization: organizationId, apiKey });
+//OPENAI CONFIG ACCESS
+const organizationId=process.env.ORGANIZATION_ID_OPENAI;
+const API_KEY_OPENAI=process.env.API_KEY_OPENAI;
+const assistantId=process.env.ASSISTANT_ID_OPENAI;
+
+const openai = new OpenAI({ organization: organizationId, API_KEY_OPENAI });
+
+
 
 
 const assistantBack =async ()=>{
@@ -87,6 +117,8 @@ const assistantBack =async ()=>{
                 console.log(`
                     Answer: ${event.data.content[0].text.value}
         `);
+        writeTweet(event.data.content[0].text.value)
+
             }
             lista.push(event);
             }
@@ -94,5 +126,36 @@ const assistantBack =async ()=>{
            // console.log(myAssistant)
 }
 
-assistantBack();
+const tweet = async (msg) => {
+  try {
+    const { data: createdTweet } = await twitterClient.v2.tweet(msg);
+  } catch (e) {
+    console.log(e)
+  }
 
+  console.log(createdTweet)
+}
+
+const homeTimeline = async ()=> { await twitterClient.v2.userTimeline('6')
+.then(response =>{
+  for (const fetchedTweet of response) {
+    console.log(fetchedTweet);
+  }
+})
+}
+
+const replayTweet = async (msg,id) => {
+
+  await twitterClient.v2.reply(
+    msg , id
+    //createdTweet.id,
+  );
+}
+
+//assistantBack();
+//tweet("Hello world!");
+homeTimeline();
+
+app.listen(port, () => {
+  console.log(`Listening some RockMusic on port ${port}`)
+})
