@@ -416,7 +416,7 @@ loadImg("./picture_h4kwiz.png",10,10,100,100);
 // Write the image to file
 const buffer = canvas.toBuffer("image/png");
 fs.writeFileSync("./image.png", buffer);
-  
+  return data
 }// fine funzione canvaa
 
 //run()

@@ -36,16 +36,18 @@ const tweet = async (msg) => {
 
 
   
-const tweetImage = async (msg) => {
+const tweetImage = async (data) => {
   
    /* if(!tweetMode){
     console.log('Tweet Dev');
      return }
+     
      */
+     let title= data[data.length-1];
     try {
       const mediaId = await client.v1.uploadMedia('./image.png');
       const { data: createdTweet } = await twitterClient.v2.tweet(
-        { text: 'Source:#CoinMarketCap #MarketCap #Crypto', media: { media_ids: [mediaId] } }
+        { text: `${title} Source:#CoinMarketCap #MarketCap #Crypto`, media: { media_ids: [mediaId] } }
       );
       console.log(`\n > Running tweet`)
       console.log('TweetID:',createdTweet);

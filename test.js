@@ -419,7 +419,7 @@ const cronTweet = new CronJob(timerLoop, async () => {
   console.log('Crocchi < ',temp);
  if(temp.includes('STATS')){//SE ESCE AZIONE STATS
   await canvaa()
-  .then( resp => tweetImage() );
+  .then( resp => tweetImage(resp) );
   
  }else{
 
