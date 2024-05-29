@@ -332,7 +332,7 @@ const post = {
     token_tweet:'',
     font:"bold 25pt 'Open Sans'",
     background_color: ["#0d0a21","#0d0a21","#0d0a21" ],
-    legenda: `NAME                         PRICE                     1H %           24H %           7D %               MCap                  VOL(24h)    `
+    legenda: `NAME                       PRICE                   1H %         24H %         7D %             MCap                VOL(24h)    `
   }
 
   canvas = createCanvas(width, height);
