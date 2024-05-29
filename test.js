@@ -10,10 +10,11 @@ const { argomenti , approaches ,solanaArgomenti, action } = require("./argomenti
 // { argomento: 'NFT Marketplaces', pnt: 0, used: 0, timestamp: [] }
 
 //CONFIG
-let timerLoop="01/3 * * * *"; //dal primo minuto..ogni 3 minuti
+let timerLoop="01/2 * * * *"; //dal primo minuto..ogni 3 minuti
 let thread;
 let runStep;
 let myBot;
+
 
 //UTILITY
 const { random , timeStamp, getInfoByContract, casual, extractOptions } = require("./utility.js");
@@ -180,14 +181,12 @@ const run = openai.beta.threads.runs.stream(threadId, {
    //CONTROLLA TWITTER TWEET
    const maxLength = 280; // Limite massimo di caratteri per un tweet
   let twitterOff=false;
-
-if (twitter.parseTweet(content.value).weightedLength <= maxLength) {
-    console.log('\nIl tweet ok!');
-} else {
-    console.log('\nIl tweet supera il limite di caratteri!');
-    twitterOff=false;
+  
+  const checked=tweetCheck(content.value);
+  if(!checked){
     return 'Il tweet supera il limite di caratteri!'
-}
+  }
+
 
    //controlla se è un pool tweet
    if(content.value.includes('Survey')){
@@ -196,7 +195,24 @@ if (twitter.parseTweet(content.value).weightedLength <= maxLength) {
     // Stringa di esempio
     const surveyString = content.value;
     //console.log('stringa:'+surveyString);
-    let optionsArray = extractOptions(surveyString);
+    //let optionsArray = extractOptions(surveyString);
+
+
+// Funzione per pulire e dividere la stringa
+function parseSurveyString(str) {
+  // Rimuove i caratteri non stampabili (come \u0000) \n
+  let cleanedString = str.replace(/\u0000/g, ' ').trim();
+  
+  // Usa regex per estrarre le parti necessarie
+  let surveyTitle = cleanedString.match(/Survey:\s*(.*?)(\n|$)/)[1];
+  let surveyInfo = cleanedString.match(/Info:\s*(.*?)(\n|$)/)[1];
+  let options = cleanedString.match(/Option \d:\s*(.*?)(\n|$)/g).map(option => option.replace(/Option \d:\s*/, '').trim());
+
+  return [surveyTitle, ...options, surveyInfo];
+}
+
+let parsedArray = parseSurveyString(surveyString);
+console.log(parsedArray);
 
     // Utilizza l'espressione regolare per trovare tutte le opzioni dopo 'Option 1'
    /* const regex = /Option \d+: (.+?)(?= Option \d+: |$)/g;
@@ -210,10 +226,10 @@ if (twitter.parseTweet(content.value).weightedLength <= maxLength) {
       options.push(match[1]);
     }
     */
-    console.log(optionsArray)
+    //console.log(optionsArray)
 
     timeStamp();
-    tweetPool(content.value,optionsArray)
+    tweetPool(content.value,parsedArray)
    }else{
    timeStamp();
    tweet(content.value)
@@ -397,7 +413,7 @@ const cronTweet = new CronJob(timerLoop, async () => {
   console.log('\n CronJob ', timeStamp());
   //const address_token='J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn';
   //H4cwzkkLa8thnkdvfF7FCwcEteDyB9BRmjMgnNACTsGo - J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn
-  //const temp=`${random(istruzionii)} ${random(solanaArgomenti).argomento} ,add 2 twitter hashtag,remove annotation tag`;
+  //  ${casual(action)}  ${action[5].execute}
  //const temp=`can you give me info about this contract address... ${address_token} `;
   const temp=`${casual(action)} ${casual(argomenti)} ,add 2 twitter hashtag,remove annotation tag`;
   console.log('Crocchi < ',temp);
@@ -432,4 +448,4 @@ const liveAI = async ()=>{
 //assistantBack();
 liveAI();
 
-
+module.exports = { myBot }

@@ -1,6 +1,7 @@
 
 
 const { TwitterApi } = require('twitter-api-v2');
+var twitter = require('twitter-text');
 
 let tweetMode=false;
 
@@ -26,7 +27,7 @@ const tweet = async (msg) => {
      return }
     try {
       const { data: createdTweet } = await twitterClient.v2.tweet(msg);
-      console.log(`\n ${myBot.name} > Running tweet`)
+      console.log(`\n > Running tweet`)
       console.log('TweetID:',createdTweet);
     } catch (e) {
       console.log(e)
@@ -46,7 +47,7 @@ const tweetImage = async (msg) => {
       const { data: createdTweet } = await twitterClient.v2.tweet(
         { text: 'Source:#CoinMarketCap #MarketCap #Crypto', media: { media_ids: [mediaId] } }
       );
-      console.log(`\n ${myBot.name} > Running tweet`)
+      console.log(`\n > Running tweet`)
       console.log('TweetID:',createdTweet);
     } catch (e) {
       console.log(e)
@@ -70,13 +71,13 @@ const tweetCheck = (msg)=>{
 }
 
 const tweetPool = async (msg,pollOptions) => {
-    //const poolOp=pollOptions[0];
-    //const poolOp_two=pollOptions[1];
+    const poolOp=pollOptions[1];
+    const poolOp_two=pollOptions[2];
     try {
-      const { data: createdTweet } = await twitterClient.v2.tweet(msg, {
-        poll: { duration_minutes: 120, options: pollOptions }
+      const { data: createdTweet } = await twitterClient.v2.tweet(`Survey: ${pollOptions[3]} ${pollOptions[0]} `, {
+        poll: { duration_minutes: 120, options: [poolOp, poolOp_two] }
       });
-      console.log(`\n ${myBot.name} > Running tweet`)
+      console.log(`\n > Running tweet`)
       console.log('TweetID:',createdTweet);
     } catch (e) {
       console.log(e)

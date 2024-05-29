@@ -86,7 +86,7 @@ let action =[
      //`sintetizzami una notizia del sito: cryptoitalia.it ${argomenti}`,// function getNews('cryptoitalia.it')
     { pool:true ,execute: "STATS", pnt: 0, used: 0, timestamp: [] },
        // token info crypto list token (btc,eth,sol,)
-    { pool:false ,execute: "please start your response with the word 'Survey',divide the 2 option with the text ' Option 1', ' Option 2'. Any option can only be 25 characters long. Please Remeber to answer within the 280-character limit.Please generate a surveys with 2 option about", pnt: 0, used: 0, timestamp: [] },
+    { pool:false ,execute: "please start your response with the word 'Survey',divide the two option with the text ' Option 1', ' Option 2' and the information about the survey with the text 'Info:'. Any option can only be 25 characters long. Please Remeber to answer within the 280-character limit.Please generate a survey with 2 option about", pnt: 0, used: 0, timestamp: [] },
    // { pool:false ,execute: "Please generate a funny tweet about", pnt: 0, used: 0, timestamp: [] },
     { pool:false ,execute: "Please generate a tweet and explain concepts in great depth using simple terms about", pnt: 0, used: 0, timestamp: [] },
     { pool:false ,execute: "Please generate a tweet asking a question about", pnt: 0, used: 0, timestamp: [] }     
