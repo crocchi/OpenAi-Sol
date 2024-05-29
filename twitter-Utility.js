@@ -3,7 +3,7 @@
 const { TwitterApi } = require('twitter-api-v2');
 var twitter = require('twitter-text');
 
-let tweetMode=false;
+let tweetMode=true;
 
 //    TWITTER CLIENT
 //
