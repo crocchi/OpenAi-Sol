@@ -1,22 +1,26 @@
 require('dotenv').config()
 const OpenAI = require('openai');
-const { TwitterApi } = require('twitter-api-v2');
+var twitter = require('twitter-text');
 const CronJob = require("cron").CronJob;
+const fetch = require('node-fetch');
 
+//arrAay con info,ARGOMENTI, HASHTAG, istruzioni per h4ckwiz
+const { hashtagArray } = require("./hashtag.js")
+const { argomenti , approaches ,solanaArgomenti, action } = require("./argomenti.js");
+// { argomento: 'NFT Marketplaces', pnt: 0, used: 0, timestamp: [] }
 
-//    TWITTER CLIENT
-//
-const client = new TwitterApi({
-    appKey: process.env.API_KEY_TWITTER,
-    appSecret: process.env.API_KEY_SECRET,
-    accessToken: process.env.ACCESS_TOKEN,
-    accessSecret: process.env.ACCESS_TOKEN_SECRET
-});
-const bearer = new TwitterApi(process.env.BEARER_TOKEN);
-const twitterClient = client.readWrite;
-const twitterBearer = bearer.readOnly;
-//
-//    END TWITTER CLIENT
+//CONFIG
+let timerLoop="01/3 * * * *"; //dal primo minuto..ogni 3 minuti
+let thread;
+let runStep;
+let myBot;
+
+//UTILITY
+const { random , timeStamp, getInfoByContract, casual, extractOptions } = require("./utility.js");
+// CREA image.png con statistiche token e h4ck.js(legge pagine coinmarketcap)
+const { canvaa } = require("./canvas.js");
+// utility twitter
+const { tweetCheck , tweetImage, tweet, tweetPool, tweetMode }= require("./twitter-Utility.js")
 
 
 //     EXPRESS - FUTURE UPDATE
@@ -28,23 +32,35 @@ const port = process.env.PORT || 4000;
 //
 
 //let myAssistant=[];
-let thread;
-let message;
-let contentMsg="what is sol?, max 50 word";
-let answer;
+//"ciao, chi sei? presentati...sei libera di esprimerti tramite twitter, non più di 48 parole";
+//  PRENDI CONFIGURAZIONI DA TWITTE !!CONFIG   !!SECONDSTEP X PENSARE DUE VOLTE PRIMA DI RISPONDERE
+//
+//   https://cointelegraph.com/rss
+
+
+//sol WALLET :Y7xaqYLDSWw9nPDgfnh2Hk2yUA33uDUe1dzFoiUkEmC
+let answer=[];
 
 //OPENAI CONFIG ACCESS
 const organizationId=process.env.ORGANIZATION_ID_OPENAI;
-const API_KEY_OPENAI=process.env.API_KEY_OPENAI;
+const api_key_openai=process.env.API_KEY_OPENAI;
 const assistantId=process.env.ASSISTANT_ID_OPENAI;
+console.log(api_key_openai);
+console.log(assistantId);
 
-const openai = new OpenAI({ organization: organizationId, API_KEY_OPENAI });
+const openai = new OpenAI({
+  organization: process.env.ORGANIZATION_ID_OPENAI,
+  apiKey: process.env.API_KEY_OPENAI
+
+});
+
 
 
 
 
 const assistantBack =async ()=>{
 
+  //RIPRISTINA ASSISTENTE - INIT H4CKWIZ
     myAssistant = await openai.beta.assistants.retrieve(assistantId)
     .then(response => {
         console.log(`Assistente Caricato: ${response.name}
@@ -52,14 +68,20 @@ const assistantBack =async ()=>{
                     Modello: ${response.model}
                     Id:${response.id}
         `);
-      const myAssistant=response;
+      myBot=response;
+      console.log(response)
       })
       .catch(error => {
         console.error('Si è verificato un errore:', error);
       });
 
+      //RETRIEVE A THREDS
+      /*
+      const myThread = await openai.beta.threads.retrieve(
+        "thread_abc123"
+      );*/
 
-      // CREATE THE THREADS AND PASTE THE MSG
+      // CREA IL THREADS E INCOLLA MSG
     const tempThread = await openai.beta.threads.create()
     .then(response => {
         console.log(`
@@ -110,14 +132,15 @@ const assistantBack =async ()=>{
           );
           let lista=[];
           for await (const event of stream) {
-            //console.log(event);
+           console.log(event.data);
             if(event.event==='thread.message.completed'){
                 //console.log(event)
                 //console.log(event.data.content[0].text.)
                 console.log(`
                     Answer: ${event.data.content[0].text.value}
         `);
-        writeTweet(event.data.content[0].text.value)
+        //writeTweet(event.data.content[0].text.value)
+        tweet(event.data.content[0].text.value);
 
             }
             lista.push(event);
@@ -126,36 +149,287 @@ const assistantBack =async ()=>{
            // console.log(myAssistant)
 }
 
-const tweet = async (msg) => {
-  try {
-    const { data: createdTweet } = await twitterClient.v2.tweet(msg);
-  } catch (e) {
-    console.log(e)
-  }
 
-  console.log(createdTweet)
+let functionArgs=[];
+let jsonData;
+
+const runStreaming = async (threadId)=>{
+  
+const run = openai.beta.threads.runs.stream(threadId, {
+  assistant_id: assistantId,
+  stream: true 
+  })
+  .on('textCreated', (text) => {
+     process.stdout.write('\nassistant > ');
+
+  })
+  .on('runStepCreated', (runOb) =>{
+    //console.log(runStep);
+    runStep=runOb;
+  })
+  .on('textDelta', (textDelta, snapshot) => {
+    process.stdout.write(textDelta.value);
+    answer.push(textDelta);
+    //console.log(textDelta)
+  })
+  .on('textDone', (content, snapshot) => {
+   // console.log('text finito...')
+   //console.log('content value: ',content.value);
+   // console.log(snapshot)
+
+   //CONTROLLA TWITTER TWEET
+   const maxLength = 280; // Limite massimo di caratteri per un tweet
+  let twitterOff=false;
+
+if (twitter.parseTweet(content.value).weightedLength <= maxLength) {
+    console.log('\nIl tweet ok!');
+} else {
+    console.log('\nIl tweet supera il limite di caratteri!');
+    twitterOff=false;
+    return 'Il tweet supera il limite di caratteri!'
 }
 
-const homeTimeline = async ()=> { await twitterClient.v2.userTimeline('6')
-.then(response =>{
-  for (const fetchedTweet of response) {
-    console.log(fetchedTweet);
+   //controlla se è un pool tweet
+   if(content.value.includes('Survey')){
+
+
+    // Stringa di esempio
+    const surveyString = content.value;
+    //console.log('stringa:'+surveyString);
+    let optionsArray = extractOptions(surveyString);
+
+    // Utilizza l'espressione regolare per trovare tutte le opzioni dopo 'Option 1'
+   /* const regex = /Option \d+: (.+?)(?= Option \d+: |$)/g;
+    const matches = surveyString.matchAll(regex);
+    
+    // Crea un array per le opzioni
+    const options = [];
+    //console.log(matches)
+    // Itera su tutte le corrispondenze e inserisci le opzioni nell'array
+    for (const match of matches) {
+      options.push(match[1]);
+    }
+    */
+    console.log(optionsArray)
+
+    timeStamp();
+    tweetPool(content.value,optionsArray)
+   }else{
+   timeStamp();
+   tweet(content.value)
+  //console.log('\ntweet')
   }
+  })
+  .on('toolCallCreated', (toolCall) => {
+    // process.stdout.write(`\nassistant > ${toolCall.type}\n\n`)
+     console.log(`Creazione ToolCall ID: ${toolCall.id}`)
+     //console.log(thread)
+  })
+ 
+  .on('toolCallDone', async (toolCall) => { 
+    console.log('here - toolCallDone');
+    //console.log(toolCall.id)
+    let tmpArgs=functionArgs.join("");
+    tmpArgs=JSON.parse(tmpArgs);
+    //console.log(tmpArgs);
+    //let infoToken=await getInfoByContract(tmpArgs.address); // bug  qui gli ritorna una promise
+    await getInfoByContract(tmpArgs.address)
+    .then(res => {
+      jsonData=JSON.stringify(res)
+      console.log(`Risulatati ToolFunctionCall : ${res.name} Token`);
+
+      // QUI INVIAMO LA RISPOSTA6n DEL TOOL INVOCATO E COMPLETATO
+      //INVIAMO I DATI DEL TOKEN RICEVUTI
+      //run_R5o8HgZi1nnu3p1VGfoSdZn4
+      //submitToolInfo=(runId , callId , responseCall ,threadId=thread.id)
+ 
+      submitToolInfo(runStep.run_id, toolCall.id, jsonData, thread.id );
+    })
+
+  })
+  .on('end', () =>{ 
+   // console.log('at the end of days...runstreaming');
+      //sendExtraMsg(jsonData);
+      functionArgs=[];
+  })
+  .on('toolCallDelta', (toolCallDelta, snapshot) => {
+  //console.log(toolCallDelta);
+   //console.log(snapshot);
+
+   // let objec=JSON.parse(toolCallDelta.function);
+    
+    functionArgs.push(toolCallDelta.function.arguments)
+    //console.log(functionArgs)
+
+
+ /*      messages.push({
+        tool_call_id: toolCall.id,
+        role: "tool",
+        name: functionName,
+        content: functionResponse,
+      }); 
+*/
+
+
+
+    //console.log(toolCall);
+    if (toolCallDelta.type === 'code_interpreter') {
+      if (toolCallDelta.code_interpreter.input) {
+        process.stdout.write(toolCallDelta.code_interpreter.input);
+      }
+      if (toolCallDelta.code_interpreter.outputs) {
+        process.stdout.write("\noutput >\n");
+        toolCallDelta.code_interpreter.outputs.forEach(output => {
+          if (output.type === "logs") {
+            process.stdout.write(`\n${output.logs}\n`);
+          }
+        });
+      }
+    }
+
+
+  });
+
+  /*
+  if(answer[0]){
+    answerss.push(answer[0].value)
+    timeStamp();
+    tweet(answer[0].value)
+  }
+  console.log(functionArgs);
+*/
+ 
+  
+  answer=[];
+  
+
+}
+
+const createThread = async ()=>{
+
+  const tempThread = await openai.beta.threads.create()
+.then(response => {
+    console.log(` Creazione Thread ID:${response.id}`);
+    thread=response;
 })
+
 }
 
-const replayTweet = async (msg,id) => {
-
-  await twitterClient.v2.reply(
-    msg , id
-    //createdTweet.id,
+const createMsg = async (threadId,msg)=>{
+  openai.beta.threads.messages.create(
+    threadId,
+    {
+      role: "user",
+      content: msg || `dimmi una cosa interessante su ${random(argomenti).argomento} `
+    }
   );
 }
 
-//assistantBack();
-//tweet("Hello world!");
-homeTimeline();
+const resumeAssistant = async ()=>{
+
+  myAssistant = await openai.beta.assistants.retrieve(assistantId)
+  .then(response => {
+      console.log(`\n
+  Assistente Caricato: ${response.name}  \n  
+  Modello: ${response.model}
+  Id: ${response.id}
+  Tools: ${response.tools[0].function.name}
+  Temperature: ${response.temperature}\n
+  File Inclusi: ${response.file_ids}\n
+  Istruzioni: ${response.instructions}
+      `);
+    myBot=response;
+   // console.log(response)
+    })
+    .catch(error => {
+      console.error('Si è verificato un errore:', error);
+    });
+
+}
+
+
+const submitToolInfo = async (runId , callId , responseCall ,threadId=thread.id)=> {
+  const stream = await openai.beta.threads.runs.submitToolOutputs(
+    threadId,
+    runId,
+    {
+      tool_outputs: [
+        {
+          tool_call_id: callId,
+          output: responseCall
+        },
+      ],
+      stream:true
+    }
+  )
+ 
+  for await (const event of stream) {
+    //console.log(event);
+    if(event.event==='thread.message.completed'){
+      const answer=event.data.content[0].text.value;
+      console.log(answer);
+      const checked=tweetCheck(answer);
+      if(checked){
+        tweet(answer)
+      }
+      
+    }
+   /* if(event.event==='thread.run.step.completed'){
+      console.log(event.data.step_details.message_creation)
+    }*/
+  }
+
+}
+
+
+let istruzionii =[
+  //`dimmi una cosa interessante su`,
+  `Please generate a tweet about`,
+  `Please generate a tweet and give examples to help people learn about`,
+  `Tell me something about`,
+  `start your response with the word 'Survey', Please generate a surveys with 2 option about`, //write me the 2 choiche inside a js array
+  `Please generate a tweet and explain concepts in great depth using simple terms about`,
+  `Please generate a tweet asking a question about`,
+  `Tell me something sexy ,funny joke about crypto `
+]
+
+const cronTweet = new CronJob(timerLoop, async () => {
+  console.log('\n CronJob ', timeStamp());
+  //const address_token='J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn';
+  //H4cwzkkLa8thnkdvfF7FCwcEteDyB9BRmjMgnNACTsGo - J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn
+  //const temp=`${random(istruzionii)} ${random(solanaArgomenti).argomento} ,add 2 twitter hashtag,remove annotation tag`;
+ //const temp=`can you give me info about this contract address... ${address_token} `;
+  const temp=`${casual(action)} ${casual(argomenti)} ,add 2 twitter hashtag,remove annotation tag`;
+  console.log('Crocchi < ',temp);
+ if(temp.includes('STATS')){//SE ESCE AZIONE STATS
+  await canvaa()
+  .then( resp => tweetImage() );
+  
+ }else{
+
+  await createMsg(thread.id, temp)//temp); msgDemo
+  runStreaming(thread.id);
+ }
+
+
+});
+
 
 app.listen(port, () => {
   console.log(`Listening some RockMusic on port ${port}`)
 })
+
+
+const liveAI = async ()=>{
+  await resumeAssistant()
+  await createThread()
+  //await createMsg(thread.id)
+  //runStreaming(thread.id)
+  cronTweet.start();
+}
+
+
+//assistantBack();
+liveAI();
+
+

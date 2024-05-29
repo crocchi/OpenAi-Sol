@@ -12,7 +12,17 @@
   "dependencies": {
     "@solana/spl-token": "^0.4.3",
     "@solana/web3.js": "^1.91.1",
+    "axios": "^1.6.8",
+    "canvas": "^2.11.2",
+    "cheerio": "^1.0.0-rc.12",
+    "cron": "^3.1.7",
+    "dotenv": "^16.4.5",
     "ejs": "^3.1.9",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "needle": "^3.3.1",
+    "node-fetch": "^2.7.0",
+    "openai": "^4.33.0",
+    "twitter-api-v2": "^1.16.1",
+    "twitter-text": "^3.1.0"
   }
 }
