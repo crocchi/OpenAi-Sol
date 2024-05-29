@@ -271,7 +271,41 @@ function extractOptions(str) {
 //let optionsArray = extractOptions(optionsString);
 
 
-module.exports = { random , getTokenInfo , timeStamp, getInfoByContract , casual , extractOptions};
+function formatCurrency(currencyString) {
+  // Rimuove il simbolo $ e le virgole
+  let numericString = currencyString.replace(/[$,]/g, '');
+  
+  // Converte la stringa in numero
+  let number = parseFloat(numericString);
+  
+  // Determina il formato corretto
+  let formattedString;
+  if (number >= 1000000000) {
+      // Se il numero è in miliardi
+      formattedString = (number / 1000000000).toFixed(2) + ' B';
+  } else if (number >= 1000000) {
+      // Se il numero è in milioni
+      formattedString = (number / 1000000).toFixed(2) + ' M';
+  } else {
+      // Se il numero è inferiore a un milione (opzionale)
+      formattedString = (number / 1000).toFixed(2) + ' K';
+  }
+  
+  return `$${formattedString}`
+}
+
+// Esempi
+/*
+let currencyString1 = "$11,742,599";
+let result1 = formatLargeNumber(currencyString1);
+console.log(result1); // Output: 11.74 M
+
+let currencyString2 = "$1,234,567,890";
+let result2 = formatLargeNumber(currencyString2);
+console.log(result2); // Output: 1.23 B
+*/
+
+module.exports = { random , getTokenInfo , timeStamp, getInfoByContract , casual , extractOptions, formatCurrency};
 
 
 let tools=[

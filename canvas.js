@@ -1,6 +1,8 @@
 const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs");
 const { getFeed , getCMCfeed } = require("./h4ck.js")
+//UTILITY
+const { formatCurrency } = require("./utility.js");
 
 const width = 1200;
 const height = 675;
@@ -332,7 +334,7 @@ const post = {
     token_tweet:'',
     font:"bold 25pt 'Open Sans'",
     background_color: ["#0d0a21","#0d0a21","#0d0a21" ],
-    legenda: `NAME                       PRICE                   1H %         24H %         7D %             MCap                VOL(24h)    `
+    legenda: `NAME                     PRICE                1H %        24H %        7D %           MCap                VOL(24h)    `
   }
 
   canvas = createCanvas(width, height);
@@ -373,7 +375,7 @@ context.font ="Italic 18pt 'Open Sans'";
 
 //se il nome del token è troppo lungo...fixiamo
 if(obj[i].name.length > 20){//if too long,only symbol
-    context.fillText(obj[i].symbol, 45, 180+(i*50));
+    context.fillText(`#${obj[i].symbol}`, 45, 180+(i*50));
     context.font =`Italic ${16}pt 'Open Sans'`;
     context.fillStyle = color[i%2];
 }else if(obj[i].name.length >= 10){ 
@@ -405,7 +407,7 @@ context.fillText(obj[i].d7, 700, 180+(i*50));
 context.fillText(obj[i].marketCap, 830, 180+(i*50));
 
 // TOKEN_volume
-context.fillText(obj[i].volume, 1010, 180+(i*50));
+context.fillText(formatCurrency(obj[i].volume), 1010, 180+(i*50));
 
 }// fine ciclo for
 
@@ -420,5 +422,5 @@ fs.writeFileSync("./image.png", buffer);
 }// fine funzione canvaa
 
 //run()
-//canvaa()
+canvaa()
 module.exports = { canvaa};
