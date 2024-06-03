@@ -213,9 +213,41 @@ async function getCMCfeed() {
 
 }
 
-module.exports = { getFeed , getCMCfeed }
+//td-trending-now-post-0 1 2
+// h2 a.text()
+// PRENDE 3 INFORMAZIONI TREND AL VOLO SULLA PAGINA
+//https://cryptonomist.ch/
+const getCryptomistTrendNews= async ()=> { 
+
+    const tokenObjects = [];
+
+    try {
+      const siteUrl = "https://cryptonomist.ch/";
+  
+      let title,name,nameToken,h1,h24,d7,mcap,vol24;
+      
+      const { data } = await axios({
+        method: "GET",
+        url: siteUrl,
+      });
+
+      const $ = cheerio.load(data);
+
+      $(".td-trending-now-display-area").children().each((parentsIdx, el) => { 
+        title=$(el).find('h2 > a').text();
+        tokenObjects.push(title);
+      })
+    }catch(e){
+        console.log(e);
+    }
+console.log(tokenObjects);
+return tokenObjects
+}//fine funzione cryptomist
+
+
+module.exports = { getFeed , getCMCfeed, getCryptomistTrendNews }
 //https://coinmarketcap.com/view/solana-ecosystem/
 //Top Solana Ecosystem Tokens by Market Capitalization
 
 //getFeed();
-//getCMCfeed()
+getCryptomistTrendNews();

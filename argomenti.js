@@ -80,6 +80,7 @@ let action =[
   //  { pool:false ,execute: "sei un personaggio social, hai un account tuo personale su twitter, sei libera di esprimerti come se fossi una donna. hai bisogno di follower.Scrivi un post su twitter", pnt: 0, used: 0, timestamp: [] },
     { pool:false ,execute: "Please generate a tweet about", pnt: 0, used: 0, timestamp: [] },
     { pool:false ,execute: "Tell me something sexy ,funny joke about crypto ", pnt: 0, used: 0, timestamp: [] },
+    { pool:true ,execute: "getCryptomistTrendNews", pnt: 0, used: 0, timestamp: [] },
     { pool:false ,execute: "Please generate a tweet, giving examples to help people learn about", pnt: 0, used: 0, timestamp: [] },
     { pool:false ,execute: "Tell me something about", pnt: 0, used: 0, timestamp: [] },
      // Top Trending Cryptocurrencies Today

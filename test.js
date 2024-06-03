@@ -10,7 +10,7 @@ const { argomenti , approaches ,solanaArgomenti, action } = require("./argomenti
 // { argomento: 'NFT Marketplaces', pnt: 0, used: 0, timestamp: [] }
 
 //CONFIG
-let timerLoop="01/40 * * * *"; //dal primo minuto..ogni 3 minuti
+let timerLoop="01/30 * * * *"; //dal primo minuto..ogni 3 minuti
 let thread;
 let runStep;
 let myBot;
@@ -20,6 +20,7 @@ let myBot;
 const { random , timeStamp, getInfoByContract, casual, extractOptions } = require("./utility.js");
 // CREA image.png con statistiche token e h4ck.js(legge pagine coinmarketcap)
 const { canvaa } = require("./canvas.js");
+const { getCryptomistTrendNews } = require("./h4ck.js");
 // utility twitter
 const { tweetCheck , tweetImage, tweet, tweetPool, tweetMode }= require("./twitter-Utility.js")
 
@@ -421,6 +422,12 @@ const cronTweet = new CronJob(timerLoop, async () => {
   await canvaa()
   .then( resp => tweetImage(resp) );
   
+ }else if(temp.includes('getCryptomistTrendNews')){
+  let tmpdt=await getCryptomistTrendNews();
+  temp=`${action[0].execute} ${tmpdt[Math.floor(Math.random() * tmpdt.length)]} `;
+  await createMsg(thread.id, temp);
+  runStreaming(thread.id);
+
  }else{
 
   await createMsg(thread.id, temp)//temp); msgDemo

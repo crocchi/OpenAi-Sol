@@ -47,7 +47,7 @@ const tweetImage = async (data) => {
     try {
       const mediaId = await client.v1.uploadMedia('./image.png');
       const { data: createdTweet } = await twitterClient.v2.tweet(
-        { text: `${title} Source:#CoinMarketCap #MarketCap #Crypto`, media: { media_ids: [mediaId] } }
+        { text: `${title} Source:#CoinMarketCap #MarketCap #cryptostats #Crypto`, media: { media_ids: [mediaId] } }
       );
       console.log(`\n > Running tweet`)
       console.log('TweetID:',createdTweet);
@@ -76,7 +76,7 @@ const tweetPool = async (msg,pollOptions) => {
     const poolOp=pollOptions[1];
     const poolOp_two=pollOptions[2];
     try {
-      const { data: createdTweet } = await twitterClient.v2.tweet(`Survey: ${pollOptions[3]} ${pollOptions[0]} `, {
+      const { data: createdTweet } = await twitterClient.v2.tweet(`Survey: ${pollOptions[3]} `, {
         poll: { duration_minutes: 120, options: [poolOp, poolOp_two] }
       });
       console.log(`\n > Running tweet`)
