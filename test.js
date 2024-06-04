@@ -418,6 +418,8 @@ const cronTweet = new CronJob(timerLoop, async () => {
  //const temp=`can you give me info about this contract address... ${address_token} `;
   const temp=`${casual(action)} ${casual(argomenti)} ,add 2 twitter hashtag,remove annotation tag`;
   console.log('Crocchi < ',temp);
+
+  
  if(temp.includes('STATS')){//SE ESCE AZIONE STATS
   await canvaa()
   .then( resp => tweetImage(resp) );
