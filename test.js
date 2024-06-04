@@ -10,7 +10,7 @@ const { argomenti , approaches ,solanaArgomenti, action } = require("./argomenti
 // { argomento: 'NFT Marketplaces', pnt: 0, used: 0, timestamp: [] }
 
 //CONFIG
-let timerLoop="01/30 * * * *"; //dal primo minuto..ogni 3 minuti
+let timerLoop="01/45 * * * *"; //dal primo minuto..ogni 3 minuti
 let thread;
 let runStep;
 let myBot;
