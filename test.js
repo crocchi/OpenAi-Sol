@@ -416,7 +416,7 @@ const cronTweet = new CronJob(timerLoop, async () => {
   //H4cwzkkLa8thnkdvfF7FCwcEteDyB9BRmjMgnNACTsGo - J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn
   //  ${casual(action)}  ${action[5].execute}
  //const temp=`can you give me info about this contract address... ${address_token} `;
-  const temp=`${casual(action)} ${casual(argomenti)} ,add 2 twitter hashtag,remove annotation tag`;
+  let temp=`${casual(action)} ${casual(argomenti)} ,add 2 twitter hashtag,remove annotation tag`;
   console.log('Crocchi < ',temp);
 
   
